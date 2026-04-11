@@ -257,7 +257,8 @@ Cột `description` chứa thông tin giá trị không có trong các trường
 
 ---
 
-## Kết quả cuối cùng
+
+## Bước 11 Kết quả cuối cùng
 
 ### Thống kê dataset sau tiền xử lý
 
@@ -295,9 +296,106 @@ Cột `description` chứa thông tin giá trị không có trong các trường
    - `hanoi_apartments_processed.csv` (51 cột) → Section 4 (EDA) + Section 5 (LightGBM Regression)
    - `hanoi_apartments_for_clustering.csv` → Section 5 (K-Means Clustering)
 
+
+### Thống kê features của hanoi_apartments_processed.csv và hanoi_apartments_for_clustering.csv
+
+#### A. `hanoi_apartments_processed.csv` — 72.604 bản ghi × 51 cột
+*(Dùng cho EDA — Section 4 và LightGBM Regression — Section 5)*
+
+**Nhóm 1: Địa lý & Vị trí (Categorical)**
+
+| # | Cột | Dtype | Null | Unique | Ghi chú |
+|---|---|---|---|---|---|
+| 1 | `district_name` | object | 0 | 24 | Tên quận/huyện |
+| 2 | `ward_name` | object | 0 | 189 | Tên phường/xã (có "Unknown") |
+| 3 | `street_name` | object | 0 | 550 | Tên đường (có "Unknown") |
+| 4 | `project_name` | object | 0 | 865 | Tên dự án/tòa nhà (có "Unknown") |
+| 15 | `district_zone` | object | 0 | 3 | inner / middle / outer |
+
+**Nhóm 2: Đặc trưng số gốc (Numerical)**
+
+| # | Cột | Dtype | Min | Max | Mean |
+|---|---|---|---|---|---|
+| 5 | `price` | float64 | 100.000.000 | 21.700.000.000 | 6.955.900.781 |
+| 6 | `area` | float64 | 15,0 | 221,0 | 85,2 |
+| 7 | `bedroom_count` | float64 | 1 | 10 | 2,43 |
+| 8 | `bathroom_count` | float64 | 1 | 9 | 1,90 |
+| 12 | `price_per_m2` | float64 | 843.750 | 454.545.455 | 81.080.784 |
+| 13 | `pub_month` | float64 | 6 | 12 | 9,14 |
+| 14 | `pub_year` | float64 | 2025 | 2025 | 2025 |
+
+**Nhóm 3: Đặc trưng số sau Log Transform**
+
+| # | Cột | Dtype | Min | Max | Mean |
+|---|---|---|---|---|---|
+| 16 | `log_price` | float64 | 18,42 | 23,80 | 22,55 |
+| 17 | `log_area` | float64 | 2,77 | 5,40 | 4,40 |
+| 18 | `log_price_per_m2` | float64 | 13,65 | 19,93 | 18,17 |
+
+**Nhóm 4: Encoding Categorical**
+
+| # | Cột | Dtype | Unique | Ghi chú |
+|---|---|---|---|---|
+| 9 | `house_direction` | object | 13 | Hướng nhà gốc |
+| 10 | `balcony_direction` | object | 13 | Hướng ban công gốc |
+| 19 | `district_encoded` | int64 | 24 | Label encode của district_name (0–23) |
+| 20 | `zone_encoded` | int64 | 3 | Label encode của district_zone (0–2) |
+| 21–33 | `dir_*` (13 cột) | bool | 2 | One-hot encode của house_direction |
+
+> Các cột `dir_*`: Bắc, Nam, Tây, Tây-Bắc, Tây-Nam, Tây Bắc, Tây Nam, Unknown, Đông, Đông-Bắc, Đông-Nam, Đông Bắc, Đông Nam
+
+**Nhóm 5: Text Features từ cột `description` (Binary)**
+
+| # | Cột | Mean (tỷ lệ = 1) | Ý nghĩa |
+|---|---|---|---|
+| 34 | `feat_full_furniture` | 44,5% | Nội thất đầy đủ |
+| 35 | `feat_corner_unit` | 11,6% | Căn góc |
+| 36 | `feat_natural_light` | 15,5% | Ánh sáng tự nhiên |
+| 37 | `feat_red_book` | 38,7% | Sổ đỏ/Sổ hồng |
+| 38 | `feat_legal_full` | 20,4% | Pháp lý đầy đủ |
+| 39 | `feat_swimming_pool` | 16,5% | Bể bơi |
+| 40 | `feat_gym` | 12,8% | Gym/Phòng tập |
+| 41 | `feat_near_school` | 30,9% | Gần trường học |
+| 42 | `feat_near_hospital` | 21,7% | Gần bệnh viện |
+| 43 | `feat_near_mall` | 30,9% | Gần siêu thị/TTTM |
+| 44 | `feat_playground` | 10,4% | Sân chơi trẻ em |
+| 45 | `feat_parking` | 5,4% | Bãi đỗ xe/Hầm xe |
+| 46 | `feat_elevator` | 4,7% | Thang máy |
+| 47 | `feat_security` | 5,1% | Bảo vệ 24/7 |
+| 48 | `feat_balcony` | 43,9% | Ban công |
+| 49 | `feat_nice_view` | 28,8% | View đẹp |
+| 50 | `feat_near_park` | 27,3% | Gần công viên |
+| 51 | `quality_score` | mean=3,69 | Tổng số text features = 1 (range: 0–14) |
+
+**Cột thời gian:**
+
+| # | Cột | Dtype | Null | Ghi chú |
+|---|---|---|---|---|
+| 11 | `published_at` | object | 308 | Datetime gốc dạng string |
+
 ---
 
-## Visualizations
+#### B. `hanoi_apartments_for_clustering.csv` — 72.604 bản ghi × 8 cột
+*(Dùng cho K-Means Clustering — Section 5)*
+
+| # | Cột | Dtype | Min | Max | Mean | Ghi chú |
+|---|---|---|---|---|---|---|
+| 1 | `scaled_log_price` | float64 | -8,646 | 2,616 | ~0 | log_price sau StandardScaler |
+| 2 | `scaled_log_area` | float64 | -4,643 | 2,878 | ~0 | log_area sau StandardScaler |
+| 3 | `scaled_bedroom_count` | float64 | -2,099 | 11,135 | ~0 | bedroom_count sau StandardScaler |
+| 4 | `scaled_bathroom_count` | float64 | -2,033 | 15,958 | ~0 | bathroom_count sau StandardScaler |
+| 5 | `scaled_log_price_per_m2` | float64 | -15,156 | 5,923 | ~0 | log_price_per_m2 sau StandardScaler |
+| 6 | `scaled_district_encoded` | float64 | -1,576 | 2,169 | ~0 | district_encoded sau StandardScaler |
+| 7 | `district_name` | object | — | 24 unique | — | Nhãn quận (để diễn giải cụm) |
+| 8 | `district_zone` | object | — | 3 unique | — | inner / middle / outer (để diễn giải cụm) |
+
+> **Lưu ý:** Tất cả 6 features scaled đều có mean ≈ 0 và std = 1 — xác nhận StandardScaler hoạt động đúng. Cột `district_name` và `district_zone` là nhãn phụ trợ để diễn giải kết quả clustering, **không đưa vào thuật toán K-Means**.
+
+---
+
+
+
+## Bước 12. Visualizations
 
 ---
 
