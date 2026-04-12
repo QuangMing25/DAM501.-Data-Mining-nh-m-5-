@@ -67,13 +67,15 @@
 
 **Nhận xét:**
 
-- **Cầu Giấy dẫn đầu** cả về giá tuyệt đối (median 8,8 tỷ) lẫn giá/m² (94,6 tr/m²) — phản ánh vị trí đắc địa gần khu công nghệ cao, nhiều dự án cao cấp (Vinhomes Metropolis, The Nine...).
+- **Tây Hồ dẫn đầu** cả về giá tuyệt đối (median 9,75 tỷ) lẫn giá/m² (median 101,6 tr/m²) — phản ánh vị trí ven Hồ Tây, tập trung nhiều dự án siêu cao cấp. Cầu Giấy đứng thứ 2 về giá tuyệt đối (median 8,8 tỷ) với median giá/m² 89,3 tr/m².
 
-- **Gap lớn giữa inner và outer**: Quận rẻ nhất (Gia Lâm: median 3,9 tỷ) chỉ bằng 44% quận đắt nhất (Cầu Giấy: 8,8 tỷ).
+- **Đông Anh là phát hiện bất ngờ**: median giá/m² cao thứ 2 toàn Hà Nội (96,3 tr/m²) dù thuộc **outer zone**. Nguyên nhân: chỉ có 1.050 tin đăng, chủ yếu đến từ các dự án cao cấp Vinhomes (Ocean Park, Co Loa) với diện tích nhỏ (TB 64,5 m²) nhưng đơn giá cao. Đây là hiệu ứng "selection bias" — căn hộ chung cư ở Đông Anh chủ yếu là dự án cao cấp, chưa có nhiều dự án phổ thông.
 
-- **Hà Đông là trường hợp đặc biệt**: giá/m² thấp nhất trong middle zone (64,8 tr/m²) dù thuộc vành đai trung — do quỹ đất lớn, nhiều dự án giá rẻ. Diện tích trung bình lại cao (86,8 m²), cho thấy Hà Đông cung cấp "diện tích nhiều hơn với giá rẻ hơn".
+- **Gap lớn giữa inner và outer**: Quận rẻ nhất về giá tuyệt đối (Mê Linh: median 1,3 tỷ) chỉ bằng 13% quận đắt nhất (Tây Hồ: 9,75 tỷ).
 
-- **Bắc Từ Liêm và Thanh Xuân** có giá/m² ngang nhau (~90 tr/m²) dù vị trí địa lý khác nhau — cho thấy giá không chỉ phụ thuộc khoảng cách trung tâm mà còn phụ thuộc vào chất lượng dự án.
+- **Hà Đông là trường hợp đặc biệt**: giá/m² thấp nhất trong middle zone (median 63,3 tr/m²) dù thuộc vành đai trung — do quỹ đất lớn, nhiều dự án giá rẻ. Diện tích trung bình lại cao (86,8 m²), cho thấy Hà Đông cung cấp "diện tích nhiều hơn với giá rẻ hơn".
+
+- **Bắc Từ Liêm và Thanh Xuân** có median giá/m² ngang nhau (90 tr/m²) dù vị trí địa lý khác nhau — cho thấy giá không chỉ phụ thuộc khoảng cách trung tâm mà còn phụ thuộc vào chất lượng dự án.
 
 ---
 
@@ -89,7 +91,7 @@
 | 4 | 2.772 | 12,14 | 12,00 | 146,5 | 83,0 |
 | 5+ | 104 | 11,47 | 10,00 | 155,1 | 77,0+ |
 
-### 2.2 Giá theo Hướng Nhà (Top 5)
+### 2.2 Giá theo Hướng Nhà
 
 | Hướng | Số tin | Giá TB (tỷ) | Median | Giá/m² TB (tr) |
 |---|---|---|---|---|
@@ -97,6 +99,14 @@
 | Nam | 2.352 | 7,41 | 6,80 | 85,5 |
 | Tây | 1.413 | 7,35 | 6,80 | 81,8 |
 | Tây - Bắc | 4.828 | 7,42 | 6,80 | 82,0 |
+| Đông | 1.649 | 7,22 | 6,70 | 82,2 |
+| Tây Bắc | 5.458 | 7,18 | 6,60 | 80,9 |
+| Đông - Nam | 3.392 | 7,19 | 6,50 | 82,0 |
+| Đông Nam | 4.814 | 7,06 | 6,30 | 81,2 |
+| Tây - Nam | 2.356 | 6,89 | 6,26 | 81,6 |
+| Đông - Bắc | 2.595 | 6,87 | 6,06 | 82,1 |
+| Đông Bắc | 3.464 | 6,62 | 5,90 | 81,3 |
+| Tây Nam | 2.900 | 6,58 | 5,85 | 80,3 |
 | Unknown | 35.313 | 6,79 | 6,00 | 80,1 |
 
 ### Biểu đồ 3 — Giá theo Số Phòng Ngủ và Phòng Tắm
