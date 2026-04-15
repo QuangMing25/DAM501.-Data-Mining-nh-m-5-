@@ -26,8 +26,9 @@ import os
 
 warnings.filterwarnings('ignore')
 
-DATA_PATH = "data/hanoi_apartments_cleaned.csv"
-PLOT_DIR  = "plots/section_3"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, "data/hanoi_apartments_cleaned.csv")
+PLOT_DIR  = os.path.join(BASE_DIR, "plots/section_3")
 os.makedirs(PLOT_DIR, exist_ok=True)
 
 SEP = "=" * 65
@@ -40,46 +41,30 @@ TEXT_FEATURES = [
                               "đầy đủ nội thất", "xách vali vào", "nhà đủ đồ",
                               "full nội thất cao cấp"]),
     ("feat_corner_unit",     ["căn góc"]),
-    ("feat_natural_light",   ["ánh sáng tự nhiên", "thoáng sáng", "nhiều ánh sáng"]),
-    ("feat_red_book",        ["sổ đỏ", "sổ hồng"]),
-    ("feat_legal_full",      ["pháp lý đầy đủ", "pháp lý rõ ràng",
+    ("has_legal_paper",      ["sổ đỏ", "sổ hồng", "pháp lý đầy đủ", "pháp lý rõ ràng",
                               "pháp lý hoàn chỉnh", "pháp lý sạch"]),
-    ("feat_swimming_pool",   ["bể bơi", "hồ bơi", "swimming pool"]),
-    ("feat_gym",             ["gym", "phòng tập", "fitness"]),
+    ("has_premium_amenities",["bể bơi", "hồ bơi", "swimming pool", "gym", "phòng tập", 
+                              "fitness", "sân chơi", "khu vui chơi", "khu trẻ em", "playground"]),
     ("feat_near_school",     ["trường học", "gần trường", "trường tiểu học",
                               "trường thpt", "trường mầm non", "trường quốc tế"]),
     ("feat_near_hospital",   ["bệnh viện", "gần bệnh viện"]),
     ("feat_near_mall",       ["siêu thị", "trung tâm thương mại",
                               "vinmart", "aeon", "lotte", "shophouse"]),
-    ("feat_playground",      ["sân chơi", "khu vui chơi", "khu trẻ em", "playground"]),
-    ("feat_parking",         ["bãi đỗ xe", "hầm xe", "chỗ để xe",
-                              "bãi xe", "slot ô tô"]),
-    ("feat_elevator",        ["thang máy"]),
-    ("feat_security",        ["bảo vệ 24", "an ninh 24", "bảo vệ thường trực"]),
-    ("feat_balcony",         ["ban công"]),
-    ("feat_nice_view",       ["view", "tầm nhìn", "toàn cảnh"]),
     ("feat_near_park",       ["công viên"]),
+    ("feat_balcony",         ["ban công"]),
 ]
 FEAT_NAMES = [f[0] for f in TEXT_FEATURES]
 
 LABEL_MAP = {
-    "feat_full_furniture": "Nội thất đầy đủ",
-    "feat_corner_unit":    "Căn góc",
-    "feat_natural_light":  "Ánh sáng tự nhiên",
-    "feat_red_book":       "Sổ đỏ/sổ hồng",
-    "feat_legal_full":     "Pháp lý đầy đủ",
-    "feat_swimming_pool":  "Bể bơi",
-    "feat_gym":            "Gym/phòng tập",
-    "feat_near_school":    "Gần trường học",
-    "feat_near_hospital":  "Gần bệnh viện",
-    "feat_near_mall":      "Gần siêu thị/TTTM",
-    "feat_playground":     "Sân chơi trẻ em",
-    "feat_parking":        "Bãi đỗ xe/hầm xe",
-    "feat_elevator":       "Thang máy",
-    "feat_security":       "Bảo vệ 24/7",
-    "feat_balcony":        "Ban công",
-    "feat_nice_view":      "View đẹp",
-    "feat_near_park":      "Gần công viên",
+    "feat_full_furniture":   "Nội thất đầy đủ",
+    "feat_corner_unit":      "Căn góc",
+    "has_legal_paper":       "Pháp lý rõ ràng",
+    "has_premium_amenities": "Tiện ích cao cấp",
+    "feat_near_school":      "Gần trường học",
+    "feat_near_hospital":    "Gần bệnh viện",
+    "feat_near_mall":        "Gần siêu thị/TTTM",
+    "feat_near_park":        "Gần công viên",
+    "feat_balcony":          "Ban công",
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -138,7 +123,8 @@ print(SEP)
 
 # province_name, property_type_name: zero variance
 # name, description: free text — giá trị sẽ được trích xuất thành features ở Step 10
-non_analytic = ["name", "description", "province_name", "property_type_name"]
+# house_direction: user requested to shift focus to balcony_direction instead
+non_analytic = ["name", "description", "province_name", "property_type_name", "house_direction"]
 existing = [c for c in non_analytic if c in df.columns]
 df.drop(columns=existing, inplace=True)
 print(f"Dropped: {existing}")
@@ -169,7 +155,7 @@ for col in ["bedroom_count", "bathroom_count"]:
 
 print(f"  area: 0% missing — no action needed")
 
-for col in ["ward_name", "street_name", "project_name", "house_direction", "balcony_direction"]:
+for col in ["ward_name", "street_name", "project_name", "balcony_direction"]:
     if col in df.columns:
         n_fill = df[col].isnull().sum()
         df[col] = df[col].fillna("Unknown")
@@ -266,9 +252,12 @@ le_zone = LabelEncoder()
 df["zone_encoded"] = le_zone.fit_transform(df["district_zone"])
 print(f"Label encoded: district_zone → zone_encoded ({len(le_zone.classes_)} classes)")
 
-direction_dummies = pd.get_dummies(df["house_direction"], prefix="dir")
-df = pd.concat([df, direction_dummies], axis=1)
-print(f"One-hot encoded: house_direction → {direction_dummies.shape[1]} columns")
+if "balcony_direction" in df.columns:
+    df["balcony_direction"] = df["balcony_direction"].str.replace(" - ", " ")
+    direction_dummies = pd.get_dummies(df["balcony_direction"], prefix="balcony_dir")
+    df = pd.concat([df, direction_dummies], axis=1)
+    df.drop(columns=["balcony_direction"], inplace=True)
+    print(f"One-hot encoded: balcony_direction → {direction_dummies.shape[1]} columns")
 
 # ─────────────────────────────────────────────────────────────────
 # STEP 9 — STANDARDIZATION FOR K-MEANS
@@ -324,7 +313,7 @@ print(SEP)
 print(f"Final shape: {df.shape}")
 key_num = ["price", "area", "price_per_m2", "bedroom_count", "bathroom_count"]
 print(f"\nNumeric summary:")
-print(df[key_num].describe().applymap(lambda x: f"{x:,.1f}").to_string())
+print(df[key_num].describe().map(lambda x: f"{x:,.1f}").to_string())
 print(f"\ndistrict_zone: {df['district_zone'].value_counts().to_dict()}")
 print(f"quality_score distribution:\n{df['quality_score'].value_counts().sort_index().to_string()}")
 
@@ -337,7 +326,8 @@ print(SEP)
 
 # processed (cho EDA + LightGBM): bỏ cột scaled_*
 df_out = df.drop(columns=[c for c in df.columns if c.startswith("scaled_")])
-df_out.to_csv("data/hanoi_apartments_processed.csv", index=False, encoding="utf-8-sig")
+out_processed = os.path.join(BASE_DIR, "data/hanoi_apartments_processed.csv")
+df_out.to_csv(out_processed, index=False, encoding="utf-8-sig")
 print(f"Saved: data/hanoi_apartments_processed.csv  {df_out.shape}")
 
 # clustering (cho K-Means): scaled features + zone labels
@@ -346,7 +336,8 @@ df_cluster = pd.concat(
      df[["district_name", "district_zone"]].reset_index(drop=True)],
     axis=1
 )
-df_cluster.to_csv("data/hanoi_apartments_for_clustering.csv", index=False, encoding="utf-8-sig")
+out_cluster = os.path.join(BASE_DIR, "data/hanoi_apartments_for_clustering.csv")
+df_cluster.to_csv(out_cluster, index=False, encoding="utf-8-sig")
 print(f"Saved: data/hanoi_apartments_for_clustering.csv  {df_cluster.shape}")
 
 # ─────────────────────────────────────────────────────────────────
