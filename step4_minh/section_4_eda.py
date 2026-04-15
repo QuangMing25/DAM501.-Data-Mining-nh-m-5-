@@ -27,9 +27,9 @@ import os
 warnings.filterwarnings('ignore')
 
 # ─── CONFIG ──────────────────────────────────────────────────────
-PROCESSED_PATH  = "data/hanoi_apartments_processed.csv"
-CLUSTERING_PATH = "data/hanoi_apartments_for_clustering.csv"
-PLOT_DIR        = "plots/section_4"
+PROCESSED_PATH  = "../step3_minh/data/hanoi_apartments_processed.csv"
+CLUSTERING_PATH = "../step3_minh/data/hanoi_apartments_for_clustering.csv"
+PLOT_DIR        = "plots_section_4"
 os.makedirs(PLOT_DIR, exist_ok=True)
 
 SEP = "=" * 70
@@ -209,10 +209,15 @@ bed_stats = df.groupby('bedroom_count').agg(
 )
 print(bed_stats.to_string())
 
-# --- 2.2 Giá theo hướng nhà ---
-print("\n--- 2.2 Giá theo Hướng Nhà ---")
-dir_stats = df.groupby('house_direction').agg(
-    count=('price', 'count'),
+# --- 2.2 Giá theo hướng ban công ---
+print("\n--- 2.2 Giá theo Hướng Ban Công ---")
+dir_cols = [c for c in df.columns if c.startswith('balcony_dir_')]
+if dir_cols and 'balcony_direction' not in df.columns:
+    df['balcony_direction'] = df[dir_cols].idxmax(axis=1).str.replace('balcony_dir_', '')
+
+if 'balcony_direction' in df.columns:
+    dir_stats = df.groupby('balcony_direction').agg(
+        count=('price', 'count'),
     mean_price=('price_ty', 'mean'),
     median_price=('price_ty', 'median'),
     mean_ppm2=('price_per_m2_tr', 'mean')
@@ -279,26 +284,26 @@ print(f"\nSaved: {PLOT_DIR}/eda_03_rooms_vs_price.png")
 # ─────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(12, 6))
 
-dir_order = df.groupby('house_direction')['price_per_m2_tr'].median().sort_values(ascending=True)
-dir_filtered = dir_order[dir_order.index != 'Unknown']
+if 'balcony_direction' in df.columns:
+    dir_order = df.groupby('balcony_direction')['price_per_m2_tr'].median().sort_values(ascending=True)
+    dir_filtered = dir_order[dir_order.index != 'Unknown']
 
-bp = ax.boxplot(
-    [df[df['house_direction'] == d]['price_per_m2_tr'].values for d in dir_filtered.index],
-    labels=dir_filtered.index, patch_artist=True, showfliers=False,
-    medianprops=dict(color='black', linewidth=1.5), vert=True
-)
-for patch in bp['boxes']:
-    patch.set_facecolor('#3498db')
-    patch.set_alpha(0.6)
+    bp = ax.boxplot(
+        [df[df['balcony_direction'] == d]['price_per_m2_tr'].values for d in dir_filtered.index],
+        labels=dir_filtered.index, patch_artist=True, showfliers=False,
+        medianprops=dict(color='black', linewidth=1.5), vert=True
+    )
+    for patch in bp['boxes']:
+        patch.set_facecolor('#3498db')
+        patch.set_alpha(0.6)
 
-ax.set_ylabel('Giá/m² (triệu VND)')
-ax.set_title('Phân phối Giá/m² theo Hướng Nhà', fontweight='bold')
-ax.tick_params(axis='x', rotation=30)
-
-# Mark overall median
-overall_med = df['price_per_m2_tr'].median()
-ax.axhline(overall_med, color='red', linestyle='--', lw=1, alpha=0.7, label=f'Median tổng: {overall_med:.1f} tr/m²')
-ax.legend()
+    ax.set_ylabel('Giá/m² (triệu VND)')
+    ax.set_title('Phân phối Giá/m² theo Hướng Ban Công', fontweight='bold')
+    ax.tick_params(axis='x', rotation=30)
+    
+    overall_med = df['price_per_m2_tr'].median()
+    ax.axhline(overall_med, color='red', linestyle='--', lw=1, alpha=0.7, label=f'Median tổng: {overall_med:.1f} tr/m²')
+    ax.legend()
 
 plt.tight_layout()
 plt.savefig(f"{PLOT_DIR}/eda_04_direction_vs_price.png")
@@ -421,12 +426,11 @@ for feat, val in price_corr.items():
 # ─────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(12, 10))
 
-# Full correlation with text features
 full_corr_cols = ['price', 'area', 'price_per_m2', 'bedroom_count', 'bathroom_count',
                   'quality_score', 'feat_full_furniture', 'feat_corner_unit',
-                  'feat_swimming_pool', 'feat_gym', 'feat_parking',
-                  'feat_nice_view', 'feat_balcony', 'feat_red_book',
-                  'feat_near_school', 'feat_near_mall', 'feat_near_park']
+                  'has_premium_amenities', 'has_legal_paper',
+                  'feat_balcony', 'feat_near_school', 'feat_near_hospital',
+                  'feat_near_mall', 'feat_near_park']
 
 # Rename for display
 rename_map = {
@@ -434,11 +438,10 @@ rename_map = {
     'bedroom_count': 'Phòng ngủ', 'bathroom_count': 'Phòng tắm',
     'quality_score': 'Quality Score',
     'feat_full_furniture': 'Nội thất ĐĐ', 'feat_corner_unit': 'Căn góc',
-    'feat_swimming_pool': 'Bể bơi', 'feat_gym': 'Gym',
-    'feat_parking': 'Bãi đỗ xe', 'feat_nice_view': 'View đẹp',
-    'feat_balcony': 'Ban công', 'feat_red_book': 'Sổ đỏ',
-    'feat_near_school': 'Gần trường', 'feat_near_mall': 'Gần siêu thị',
-    'feat_near_park': 'Gần công viên'
+    'has_premium_amenities': 'Tiện ích VIP', 'has_legal_paper': 'Pháp lý',
+    'feat_balcony': 'Ban công',
+    'feat_near_school': 'Gần trường', 'feat_near_hospital': 'Gần bệnh viện',
+    'feat_near_mall': 'Gần siêu thị', 'feat_near_park': 'Gần công viên'
 }
 
 corr_full = df[full_corr_cols].rename(columns=rename_map).corr()
@@ -695,7 +698,7 @@ print(f"\n{SEP}")
 print("PART 7 — TEXT FEATURES PATTERN ANALYSIS")
 print(SEP)
 
-feat_cols = [c for c in df.columns if c.startswith('feat_')]
+feat_cols = [c for c in df.columns if c.startswith('feat_') or c.startswith('has_')]
 
 # --- 7.1 Text feature tương quan với giá ---
 print("\n--- 7.1 Tương quan Text Features với Giá ---")
@@ -735,7 +738,7 @@ for i, (feat, val) in enumerate(feat_corr_sorted.items()):
 
 # 12b: Text features by zone (heatmap)
 zone_feat_mean = df.groupby('district_zone')[feat_cols].mean().reindex(ZONE_ORDER).T * 100
-zone_feat_mean.index = [c.replace('feat_', '') for c in zone_feat_mean.index]
+zone_feat_mean.index = [c.replace('feat_', '').replace('has_', '') for c in zone_feat_mean.index]
 sns.heatmap(zone_feat_mean, annot=True, fmt='.1f', cmap='YlOrRd', ax=axes[1],
             linewidths=0.5, cbar_kws={'label': 'Tỷ lệ (%)'})
 axes[1].set_title('Tỷ lệ Text Features theo Vùng (%)')
