@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 import lightgbm as lgb
 import warnings
+import pickle
 
 warnings.filterwarnings('ignore')
 
@@ -19,6 +20,8 @@ warnings.filterwarnings('ignore')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROCESSED_PATH = os.path.join(BASE_DIR, "../step3_minh/data/hanoi_apartments_processed.csv")
 CLUSTER_PATH   = os.path.join(BASE_DIR, "../step3_minh/data/hanoi_apartments_for_clustering.csv")
+OUTPUT_MODEL_PATH = os.path.join(BASE_DIR, "../step8/lgbm_model_2.pkl")
+FEATURES_PATH = os.path.join(BASE_DIR, "../step8/model_features_2.pkl")
 PLOT_DIR = os.path.join(BASE_DIR, "plots_section_5")
 os.makedirs(PLOT_DIR, exist_ok=True)
 
@@ -115,6 +118,7 @@ def train_and_evaluate(X, y, model_name, cat_features=None):
 
     results = {
         'name': model_name,
+        'X_train': X_train,
         'model': model,
         'R2': r2,
         'RMSE_ty': rmse / 1e9,
@@ -241,7 +245,7 @@ print("\n--- TRỰC QUAN HÓA KẾT QUẢ ---")
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 fig.suptitle('So sánh LightGBM: Baseline vs Tích hợp K-Means Cluster',
-             fontsize=16, fontweight='bold', y=1.02)
+            fontsize=16, fontweight='bold', y=1.02)
 
 metrics = ['R2', 'RMSE_ty', 'MAE_ty']
 titles  = ['R² Score\n(Càng cao càng tốt)', 'RMSE (Tỷ VND)\n(Càng thấp càng tốt)', 'MAE (Tỷ VND)\n(Càng thấp càng tốt)']
@@ -300,7 +304,7 @@ plt.figure(figsize=(12, 8))
 palette = ['#e74c3c' if f == 'Cluster' else '#3498db' for f in df_imp['Feature']]
 sns.barplot(x='Gain', y='Feature', data=df_imp, palette=palette)
 plt.title('Top 15 Feature Importance (LightGBM + K-Means)\n🔴 = Cluster Feature từ Bước 5A',
-          fontsize=14, fontweight='bold')
+        fontsize=14, fontweight='bold')
 plt.xlabel('Tầm quan trọng (Gain)')
 plt.ylabel('Feature')
 plt.tight_layout()
@@ -322,7 +326,7 @@ for ax, res, color, title_suffix in [
     ax.set_xlim(0, 20)
     ax.set_ylim(0, 20)
     ax.set_title(f'{title_suffix}\nR² = {res["R2"]:.4f} | MAE = {res["MAE_ty"]:.4f} Tỷ',
-                 fontsize=13, fontweight='bold')
+                fontsize=13, fontweight='bold')
     ax.set_xlabel('Giá Thực Tế (Tỷ VND)')
     ax.set_ylabel('Giá Dự Đoán (Tỷ VND)')
     ax.legend()
@@ -376,3 +380,20 @@ print(f"-> Đã lưu Boxplot sai số: plots_section_5/lightgbm_03_error_by_clus
 print("\n" + "=" * 65)
 print("[HOÀN THÀNH STEP 5B: LIGHTGBM REGRESSION + K-MEANS INTEGRATION]")
 print("=" * 65)
+
+"""
+Export model & features
+"""
+model_features = res_enhanced['X_train']
+if not os.path.exists(OUTPUT_MODEL_PATH):
+    with open(OUTPUT_MODEL_PATH, 'wb') as f:
+        pickle.dump(model_best, f)
+else:
+    print("Model has already existed")
+
+if not os.path.exists(FEATURES_PATH):
+    with open(FEATURES_PATH, 'wb') as f:
+        pickle.dump(model_features.columns.tolist(), f)
+else:
+    print("Model features have already existed")
+print("Done exporting !!")
