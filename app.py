@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import lightgbm as lgb
@@ -51,12 +52,23 @@ st.markdown("""
 def load_data():
     # Sử dụng file đã tiền xử lý từ Step 3
     df = pd.read_csv('step3_minh/data/hanoi_apartments_processed.csv')
+    
+    # Xử lý project_name: Giữ các dự án phổ biến, còn lại là 'Dự án khác'
+    project_counts = df['project_name'].value_counts()
+    popular_projects = project_counts[project_counts >= 50].index.tolist()
+    df['project_display'] = df['project_name'].apply(lambda x: x if x in popular_projects else 'Dự án khác')
+    
+    # Mã hóa project_display
+    df['project_encoded'] = df['project_display'].astype('category').cat.codes
+    
     return df
 
 df_full = load_data()
 
 # Lấy từ điển map giữa tên quận và mã code
 district_mapping = df_full.drop_duplicates(subset=['district_name', 'district_encoded'])[['district_name', 'district_encoded']].sort_values('district_name')
+# Lấy từ điển dự án
+project_mapping = df_full.drop_duplicates(subset=['project_display', 'project_encoded'])[['project_display', 'project_encoded']].sort_values('project_display')
 
 # ==================== PIPELINE STEP 5 (TRAINING) ====================
 @st.cache_resource
@@ -73,14 +85,15 @@ def train_pipeline(data):
     data['Cluster'] = kmeans.fit_predict(X_scaled)
     
     # 2. LightGBM (Step 5b)
-    # Features baseline từ Step 3 + Cluster từ Step 5
+    # Features baseline từ Step 3 + Cluster từ Step 5 + Project
     features_to_drop = ['price', 'log_price', 'price_per_m2', 'log_price_per_m2',
-                        'district_name', 'ward_name', 'street_name', 'project_name',
+                        'district_name', 'ward_name', 'street_name', 'project_name', 'project_display',
                         'district_zone', 'published_at']
     
     X_cols = [c for c in data.columns if c not in features_to_drop and not c.startswith('scaled_')]
     X = data[X_cols].copy()
     X['Cluster'] = X['Cluster'].astype('category')
+    X['project_encoded'] = X['project_encoded'].astype('category')
     y = data['log_price']
     
     # Huấn luyện model (Parameters từ Step 5b)
@@ -97,7 +110,7 @@ def train_pipeline(data):
         'random_state': 42
     }
     
-    train_data = lgb.Dataset(X, label=y, categorical_feature=['Cluster'])
+    train_data = lgb.Dataset(X, label=y, categorical_feature=['Cluster', 'project_encoded'])
     model = lgb.train(lgb_params, train_data, num_boost_round=800)
     
     # Lưu lại centroid và scaler để inference
@@ -112,6 +125,15 @@ st.sidebar.title("Thông số Căn hộ ")
 
 sel_district = st.sidebar.selectbox("Quận/Huyện", district_mapping['district_name'].tolist())
 sel_district_code = district_mapping[district_mapping['district_name'] == sel_district]['district_encoded'].values[0]
+
+# Lọc dự án theo quận (nếu có thể) hoặc hiển thị toàn bộ dự án phổ biến
+projects_in_district = df_full[df_full['district_name'] == sel_district]['project_display'].unique().tolist()
+if 'Dự án khác' not in projects_in_district:
+    projects_in_district.append('Dự án khác')
+projects_in_district.sort()
+
+sel_project = st.sidebar.selectbox("Dự án / Chủ đầu tư", projects_in_district)
+sel_project_code = project_mapping[project_mapping['project_display'] == sel_project]['project_encoded'].values[0]
 
 sel_area = st.sidebar.slider("Diện tích (m²)", min_value=20, max_value=250, value=80, step=1)
 sel_bed = st.sidebar.number_input("Số phòng ngủ", min_value=1, max_value=6, value=2, step=1)
@@ -181,6 +203,7 @@ input_row['pub_month'] = sel_month
 input_row['pub_year'] = 2026 # Giả định tương lai
 input_row['log_area'] = np.log1p(sel_area)
 input_row['district_encoded'] = sel_district_code
+input_row['project_encoded'] = sel_project_code
 input_row['zone_encoded'] = df_full[df_full['district_name'] == sel_district]['zone_encoded'].values[0]
 input_row['feat_full_furniture'] = 1 if sel_furniture else 0
 input_row['feat_corner_unit'] = 1 if sel_corner else 0
@@ -197,6 +220,7 @@ input_row['Cluster'] = pred_cluster
 # Chuyển sang DataFrame
 input_df = pd.DataFrame([input_row])
 input_df['Cluster'] = input_df['Cluster'].astype('category')
+input_df['project_encoded'] = input_df['project_encoded'].astype('category')
 
 pred_log_price = model.predict(input_df)[0]
 pred_price_vnd = np.exp(pred_log_price) - 1 # Giá gốc đơn vị VNĐ
