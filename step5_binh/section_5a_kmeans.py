@@ -8,6 +8,7 @@ import seaborn as sns
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
+import pickle
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -143,6 +144,17 @@ labels = ["Phổ Thông Ngoại Ô", "Tầm Trung Lõi", "Cao Cấp (Premium)"]
 print("\n--- DÁN NHÃN KINH DOANH CHO CỤM ---")
 for i, c_id in enumerate(sorted_idx):
     print(f"Cụm {c_id}: {labels[i]} (Giá Median: {cluster_profile.loc[c_id, 'Gia_M2_Trung_vi']})")
+
+print("\n" + "="*65)
+print("STEP 6: EXPORT K-MEANS MODEL FOR WEB APP")
+print("="*65)
+
+MODEL_EXPORT_DIR = os.path.join(os.path.dirname(BASE_DIR), "app_models")
+os.makedirs(MODEL_EXPORT_DIR, exist_ok=True)
+
+with open(os.path.join(MODEL_EXPORT_DIR, "kmeans_model.pkl"), "wb") as f:
+    pickle.dump(kmeans, f)
+print(f"Saved K-Means model to: {MODEL_EXPORT_DIR}/kmeans_model.pkl")
 
 print("\n[HOÀN THÀNH STEP 5A: K-MEANS CLUSTERING]")
 print("="*65)

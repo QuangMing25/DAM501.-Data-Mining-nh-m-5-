@@ -382,18 +382,25 @@ print("[HOÀN THÀNH STEP 5B: LIGHTGBM REGRESSION + K-MEANS INTEGRATION]")
 print("=" * 65)
 
 """
-Export model & features
+EXPORT MODELS FOR WEB APP
 """
-model_features = res_enhanced['X_train']
-if not os.path.exists(OUTPUT_MODEL_PATH):
-    with open(OUTPUT_MODEL_PATH, 'wb') as f:
-        pickle.dump(model_best, f)
-else:
-    print("Model has already existed")
+print("\n" + "=" * 65)
+print("STEP 6: EXPORTING MODEL & ARTIFACTS FOR WEB APP")
+print("=" * 65)
 
-if not os.path.exists(FEATURES_PATH):
-    with open(FEATURES_PATH, 'wb') as f:
-        pickle.dump(model_features.columns.tolist(), f)
-else:
-    print("Model features have already existed")
-print("Done exporting !!")
+MODEL_EXPORT_DIR = os.path.join(os.path.dirname(BASE_DIR), "app_models")
+os.makedirs(MODEL_EXPORT_DIR, exist_ok=True)
+
+# 1. Lưu mô hình LightGBM (đã tích hợp Cluster)
+with open(os.path.join(MODEL_EXPORT_DIR, "lgbm_model.pkl"), "wb") as f:
+    pickle.dump(model_best, f)
+
+# 2. Lưu danh sách features
+model_features = res_enhanced['X_cols']
+with open(os.path.join(MODEL_EXPORT_DIR, "feature_names.pkl"), "wb") as f:
+    pickle.dump(model_features, f)
+
+print(f"Successfully exported to: {MODEL_EXPORT_DIR}")
+print("  - lgbm_model.pkl")
+print("  - feature_names.pkl")
+

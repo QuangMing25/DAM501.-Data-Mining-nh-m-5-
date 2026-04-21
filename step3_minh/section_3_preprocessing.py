@@ -23,6 +23,7 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import warnings
 import os
+import pickle
 
 warnings.filterwarnings('ignore')
 
@@ -327,8 +328,21 @@ print(f"quality_score distribution:\n{df['quality_score'].value_counts().sort_in
 # STEP 12 — SAVE OUTPUTS
 # ─────────────────────────────────────────────────────────────────
 print(f"\n{SEP}")
-print("STEP 12 — SAVE OUTPUTS")
+print("STEP 12 — SAVE OUTPUTS & MODELS FOR WEB APP")
 print(SEP)
+
+# Tạo thư mục app_models nếu chưa có
+MODEL_EXPORT_DIR = os.path.join(os.path.dirname(BASE_DIR), "app_models")
+os.makedirs(MODEL_EXPORT_DIR, exist_ok=True)
+
+# Lưu Encoders và Scaler
+with open(os.path.join(MODEL_EXPORT_DIR, "le_district.pkl"), "wb") as f:
+    pickle.dump(le_district, f)
+with open(os.path.join(MODEL_EXPORT_DIR, "le_zone.pkl"), "wb") as f:
+    pickle.dump(le_zone, f)
+with open(os.path.join(MODEL_EXPORT_DIR, "scaler.pkl"), "wb") as f:
+    pickle.dump(scaler, f)
+print(f"Saved encoders and scaler to: {MODEL_EXPORT_DIR}")
 
 # processed (cho EDA + LightGBM): bỏ cột scaled_*
 df_out = df.drop(columns=[c for c in df.columns if c.startswith("scaled_")])
