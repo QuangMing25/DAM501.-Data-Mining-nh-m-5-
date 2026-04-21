@@ -255,9 +255,15 @@ print(f"Label encoded: district_zone → zone_encoded ({len(le_zone.classes_)} c
 if "balcony_direction" in df.columns:
     df["balcony_direction"] = df["balcony_direction"].str.replace(" - ", " ")
     direction_dummies = pd.get_dummies(df["balcony_direction"], prefix="balcony_dir")
+    
+    # Xóa cột 'balcony_dir_Unknown' để tránh dư thừa (dummy variable trap)
+    # Các hàng có 'Unknown' sẽ nhận giá trị 0 ở tất cả các cột hướng khác
+    if "balcony_dir_Unknown" in direction_dummies.columns:
+        direction_dummies.drop(columns=["balcony_dir_Unknown"], inplace=True)
+        
     df = pd.concat([df, direction_dummies], axis=1)
     df.drop(columns=["balcony_direction"], inplace=True)
-    print(f"One-hot encoded: balcony_direction → {direction_dummies.shape[1]} columns")
+    print(f"One-hot encoded: balcony_direction → {direction_dummies.shape[1]} columns (dropped 'Unknown')")
 
 # ─────────────────────────────────────────────────────────────────
 # STEP 9 — STANDARDIZATION FOR K-MEANS
