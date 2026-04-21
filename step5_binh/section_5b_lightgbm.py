@@ -377,9 +377,7 @@ plt.savefig(os.path.join(PLOT_DIR, "lightgbm_03_error_by_cluster.png"), dpi=150)
 plt.close()
 print(f"-> Đã lưu Boxplot sai số: plots_section_5/lightgbm_03_error_by_cluster.png")
 
-print("\n" + "=" * 65)
-print("[HOÀN THÀNH STEP 5B: LIGHTGBM REGRESSION + K-MEANS INTEGRATION]")
-print("=" * 65)
+
 
 """
 EXPORT MODELS FOR WEB APP
@@ -403,4 +401,16 @@ with open(os.path.join(MODEL_EXPORT_DIR, "feature_names.pkl"), "wb") as f:
 print(f"Successfully exported to: {MODEL_EXPORT_DIR}")
 print("  - lgbm_model.pkl")
 print("  - feature_names.pkl")
+
+# 3. Lưu dữ liệu đã có nhãn Cluster (Final Results)
+FINAL_DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(FINAL_DATA_DIR, exist_ok=True)
+final_csv_path = os.path.join(FINAL_DATA_DIR, "hanoi_apartments_final_results.csv")
+df.to_csv(final_csv_path, index=False, encoding="utf-8-sig")
+print(f"  - Final data saved to: {final_csv_path}")
+
+print("\n" + "=" * 65)
+print("[HOÀN THÀNH STEP 5B: LIGHTGBM REGRESSION + K-MEANS INTEGRATION]")
+print("=" * 65)
+
 
