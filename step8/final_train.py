@@ -4,22 +4,22 @@ import numpy as np
 import lightgbm as lgb
 import pickle
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 
-# --- 1. Load Master Data chuẩn ---
+# --- 1. Load Master Data  ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MASTER_DATA_PATH = os.path.join(BASE_DIR, "master_data_final_v5.csv")
+MASTER_DATA_PATH = os.path.join(BASE_DIR, "master_data_final_v6.csv")
 df_final = pd.read_csv(MASTER_DATA_PATH)
 
-# Chuyển Cluster sang category để LightGBM xử lý đúng
+# Change the cluster to the correct category so LightGBM can process it properly
 if 'Cluster' in df_final.columns:
     df_final['Cluster'] = df_final['Cluster'].astype('category')
 
-# --- 2. Chuẩn bị tập Features (X) và Target (y) ---
-# Dùng log_price_adj làm mục tiêu huấn luyện
+# --- 2. Prepare for the Features (X) and Target (y) exercises ---
+# Use log_price_adj as a training target
 target_col = 'log_price_adj'
 
-# Các cột cần loại bỏ (Leakage hoặc không liên quan)
+# Columns to be removed (Leakage or irrelevant)
 drop_cols = [
     'price', 'log_price', 'price_per_m2', 'log_price_per_m2', 
     'price_index_adjusted', 'log_price_adj',
@@ -46,9 +46,9 @@ y = df_final[target_col]
 # --- 3. Split data ---
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# --- 4. Huấn luyện Model Final ---
-print(f"-> Đang huấn luyện Model cuối trên {len(X)} mẫu với {len(X_cols)} features...")
-final_model = lgb.LGBMRegressor(**LGB_PARAMS, n_estimators=1000) # Tăng nhẹ estimators vì data lớn hơn
+# --- 4. Training ---
+print(f"-> Training the final model {len(X)} samples with {len(X_cols)} features...")
+final_model = lgb.LGBMRegressor(**LGB_PARAMS, n_estimators=1000)
 
 final_model.fit(
     X_train, y_train,
@@ -57,16 +57,18 @@ final_model.fit(
     categorical_feature=['Cluster'] if 'Cluster' in X_cols else 'auto'
 )
 
-# --- 5. Thống kê chỉ số (Metric Evaluation) ---
+# --- 5. Metric Evaluation ---
 y_pred_log = final_model.predict(X_test)
 
-# Chuyển ngược từ log về giá trị tiền thực (Tỷ VND) để tính MAE cho dễ hiểu
+# Convert the logarithm values ​​back to real monetary values ​
+# ​(billion VND) to make the MAE calculation easier to understand
 y_test_real = np.expm1(y_test)
 y_pred_real = np.expm1(y_pred_log)
 
 r2 = r2_score(y_test, y_pred_log)
 mae_real = mean_absolute_error(y_test_real, y_pred_real)
 rmse_real = np.sqrt(mean_squared_error(y_test_real, y_pred_real))
+mape = mean_absolute_percentage_error(y_test_real, y_pred_real) * 100
 
 print("\n" + "="*50)
 print("THỐNG KÊ MODEL CUỐI CÙNG (FINAL MODEL)")
@@ -75,6 +77,7 @@ print(f"1. R2 Score (trên log_price_adj): {r2:.4f}")
 print(f"2. MAE (Sai số trung bình):        {mae_real:.4f} Tỷ VNĐ")
 print(f"3. RMSE (Độ lệch chuẩn sai số):   {rmse_real:.4f} Tỷ VNĐ")
 print(f"4. Tổng số features sử dụng:       {len(X_cols)}")
+print(f"5.  MAPE : {mape:.2f}%")
 print("="*50)
 
 # --- 6. Lưu Artifacts cuối cùng ---

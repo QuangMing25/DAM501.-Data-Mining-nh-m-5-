@@ -35,8 +35,9 @@ def verify_macro_consistency(df):
     else:
         print("\n=> CẢNH BÁO: Có sự sai lệch tại điểm giao thoa. Cần kiểm tra lại bước Merge Macro.")
 
-# Sử dụng:
+# Use:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FINAL = os.path.join(BASE_DIR, "master_data_final_v3.csv")
+DATA_FINAL = os.path.join(BASE_DIR, "master_data_final_v6.csv")
 df_master_final = pd.read_csv(DATA_FINAL)
+
 verify_macro_consistency(df_master_final)
