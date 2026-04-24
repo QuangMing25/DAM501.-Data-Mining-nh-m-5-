@@ -27,14 +27,15 @@ st.markdown("""
 st.sidebar.markdown("<div class='sidebar-header'>📂 CẤU HÌNH DỮ LIỆU</div>", unsafe_allow_html=True)
 dataset_option = st.sidebar.selectbox(
     "Bộ dữ liệu phân tích",
-    ["Dữ liệu Tiêu chuẩn (Gốc)", "Dữ liệu Nâng cao (2025 Adjusted)"],
+    ["Dữ liệu Tiêu chuẩn (Gốc)", "Dữ liệu Nâng cao (2025 Adjusted)", "Dữ liệu Final"],
     help="Chọn nguồn dữ liệu và mô hình dự báo tương ứng."
 )
 is_dataset_2 = dataset_option == "Dữ liệu Nâng cao (2025 Adjusted)"
+is_dataset_minh = dataset_option == "Dữ liệu Final"
 
 # --- LOAD ARTIFACTS (BRAIN) ---
 @st.cache_resource
-def load_prediction_engine(is_v2=False):
+def load_prediction_engine(dataset_type):
     path = "app_models/"
     artifacts = {}
     # Các thành phần dùng chung
@@ -49,7 +50,7 @@ def load_prediction_engine(is_v2=False):
             artifacts[key] = pickle.load(f)
     
     # Thành phần thay đổi theo bộ dữ liệu
-    if is_v2:
+    if dataset_type == "Dữ liệu Nâng cao (2025 Adjusted)":
         model_path = "data_v2/2025/lgbm_model_v2_2025.pkl"
         feat_path = "data_v2/2025/feature_names_v2_2025.pkl"
         with open(model_path, 'rb') as f:
@@ -57,6 +58,7 @@ def load_prediction_engine(is_v2=False):
         with open(feat_path, 'rb') as f:
             artifacts['feature_names'] = pickle.load(f)
     else:
+        # Cả Dataset 1 và Dataset Minh đều dùng mô hình chuẩn
         with open(os.path.join(path, 'lgbm_model.pkl'), 'rb') as f:
             artifacts['model'] = pickle.load(f)
         artifacts['feature_names'] = artifacts['model'].feature_name_
@@ -64,16 +66,18 @@ def load_prediction_engine(is_v2=False):
     return artifacts
 
 try:
-    engine = load_prediction_engine(is_dataset_2)
+    engine = load_prediction_engine(dataset_option)
 except Exception as e:
     st.error(f"Lỗi khởi động bộ não dự báo: {e}")
     st.stop()
 
 # --- LOAD DATA SOURCE (FOR STATS & PROJECTS) ---
 @st.cache_data
-def load_data_for_stats(is_v2=False):
-    if is_v2:
+def load_data_for_stats(dataset_type):
+    if dataset_type == "Dữ liệu Nâng cao (2025 Adjusted)":
         path = 'data_v2/2025/df_2025_FINAL_ADJUSTED.csv'
+    elif dataset_type == "Dữ liệu Final)":
+        path = 'step3_minh/data/hanoi_apartments_processed.csv'
     else:
         path = 'step5_binh/data/hanoi_apartments_final_results.csv'
         
@@ -81,6 +85,18 @@ def load_data_for_stats(is_v2=False):
         return pd.DataFrame(), []
     
     df = pd.read_csv(path)
+    
+    # Nếu là dữ liệu của Minh, cần dự đoán Cluster vì file chưa có
+    if dataset_type == "Dữ liệu Final" and 'Cluster' not in df.columns:
+        try:
+            # Chuẩn bị dữ liệu cho KMeans (phải khớp với logic huấn luyện)
+            cluster_cols = ["log_price", "log_area", "bedroom_count", "bathroom_count", "log_price_per_m2", "district_encoded"]
+            X_cluster = df[cluster_cols]
+            X_scaled = engine['scaler'].transform(X_cluster)
+            df['Cluster'] = engine['kmeans'].predict(X_scaled)
+        except Exception as e:
+            st.warning(f"Không thể tạo cột Cluster cho dữ liệu Minh: {e}")
+
     # Chuẩn hóa Quận để khớp với LabelEncoder
     df['district_name'] = df['district_name'].str.title()
     valid_le_districts = list(engine['le_district'].classes_)
@@ -228,9 +244,9 @@ except Exception as e:
 st.title("🤖 ĐỊNH GIÁ BẤT ĐỘNG SẢN THÔNG MINH 2026")
 
 if is_dataset_2:
-    st.info("📍 Đang sử dụng: **Dữ liệu Nâng cao (2025 Adjusted)** | Mô hình vĩ mô tích hợp.")
+    st.info("📍 Đang sử dụng: **Dữ liệu Nâng cao ** | Mô hình vĩ mô tích hợp.")
 else:
-    st.info("📍 Đang sử dụng: **Dữ liệu Tiêu chuẩn (Gốc)** | Mô hình suy diễn cơ bản.")
+    st.info("📍 Đang sử dụng: **Dữ liệu Tiêu chuẩn ** | Mô hình suy diễn cơ bản.")
 
 c_info = {0: ("Phổ thông", "#3498db"), 1: ("Premium", "#e74c3c"), 2: ("Trung cấp", "#f1c40f")}
 name, color = c_info.get(pred_cluster, ("N/A", "gray"))
