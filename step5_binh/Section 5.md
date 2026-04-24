@@ -200,6 +200,25 @@ Thuật toán Gain đo lường tổng thông tin mà một biến đóng góp v
 
 ![Boxplot sai số theo cụm](plots_section_5/lightgbm_03_error_by_cluster.png)
 
+### 5B.7 Deep Dive: Mô hình Toàn cục vs. Mô hình Chuyên biệt (Specialized Models)
+
+Để giải quyết "điểm mù" tại phân khúc Premium, nhóm thực hiện một thử nghiệm chuyên sâu: **Chia để trị**. Thay vì dùng một mô hình cho tất cả, nhóm huấn luyện 3 mô hình LightGBM riêng biệt cho 3 cụm.
+
+**Kết quả đối soát MAE (Tỷ VND):**
+
+| Cluster | Mô hình Toàn cục (Global) | Mô hình Chuyên biệt (Specialized) | Kết quả |
+|---|---|---|---|
+| **Cụm 0** (Tầm trung) | **0.563** | 0.592 | Global tốt hơn |
+| **Cụm 1** (Premium) | **1.149** | 1.228 | Global tốt hơn |
+| **Cụm 2** (Phổ thông) | **0.405** | 0.449 | Global tốt hơn |
+
+**Phát hiện thú vị (Knowledge Discovery):**
+Trái với dự đoán ban đầu, **Mô hình Toàn cục (Global Model) chiến thắng tuyệt đối**. 
+- **Lý do 1 (Data Volume):** Mô hình toàn cục được học từ 72.604 bản ghi, giúp nó nắm bắt được các quy luật chung của thị trường (ví dụ: ảnh hưởng của hướng nhà, tiện ích) mà các mô hình nhỏ lẻ không có đủ dữ liệu để học sâu.
+- **Lý do 2 (Feature Engineering):** Việc đưa nhãn `Cluster` vào làm categorical feature đã là quá đủ để LightGBM tự điều chỉnh logic dự báo cho từng phân khúc mà không cần tách rời dữ liệu.
+
+![MAE Comparison](plots_section_5/deep_dive_comparison_mae.png)
+
 ---
 
 ## Kết Luận Bước 5 & Định Hướng Tiếp Theo
@@ -211,6 +230,7 @@ Thuật toán Gain đo lường tổng thông tin mà một biến đóng góp v
 | Đáp ứng yêu cầu Unsupervised | ✅ K-Means Clustering | Phát hiện 3 phân khúc thị trường ẩn |
 | Đáp ứng yêu cầu Supervised | ✅ LightGBM Regression | Dự đoán giá R² = 0.85 |
 | **Pipeline liên kết 5A → 5B** | ✅ Cluster làm feature | **Cải thiện R² +3.81%, giảm MAE 103 triệu** |
+| Deep Dive: Global vs Spec | ✅ Global Model Winner | **Dữ liệu lớn + Nhãn phân cụm mang lại hiệu quả cao nhất** |
 | Feature Importance Discovery | ✅ Cluster xếp hạng #1 | K-Means tạo ra tri thức mạnh nhất cho model |
 | Giải thích được (Explainability) | ✅ Feature Importance + Error by Cluster | AI không còn là hộp đen |
 
