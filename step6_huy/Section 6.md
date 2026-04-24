@@ -17,13 +17,13 @@ Mục tiêu của K-Means là tìm ra các phân khúc thị trường "tự nhi
 
 ### B. Đánh giá qua Giá trị Nghiệp vụ (Business Relevance)
 Kết quả phân cụm không chỉ là những con số vô tri mà đã phác họa được 3 "thực thể" thực tế trên thị trường Hà Nội:
-1.  **Cụm 0 (45.5%):** Phân khúc chủ lực (2PN, 73m², ~5.2 tỷ). Đây là "xương sống" của nhu cầu ở thực.
-2.  **Cụm 1 (39.3%):** Phân khúc Premium (3PN, 112m², ~9.3 tỷ). Nhắm đến đối tượng thượng lưu, gia đình lớn.
-3.  **Cụm 2 (15.2%):** Phân khúc Studio/Phổ thông (50m², ~3.6 tỷ). Phục vụ người trẻ và nhà đầu tư cho thuê.
+| **Cụm 0 (37.6%):** Phân khúc Cao Cấp (Premium) - Giá Median: 90.9 Tr/m². Tập trung các dự án giá trị cao, tiện ích đầy đủ.
+| **Cụm 1 (46.4%):** Phân khúc Phổ Thông Ngoại Ô - Giá Median: 76.3 Tr/m². Trọng tâm nguồn cung mới dịch chuyển ra vành đai và ngoại ô.
+| **Cụm 2 (16.0%):** Phân khúc Tầm Trung Lõi - Giá Median: 76.5 Tr/m². Các dự án nội đô ổn định, đáp ứng nhu cầu ở thực.
 
 ![K-Means PCA Visualization](../step5_binh/plots_section_5/kmeans_02_pca_clusters.png)
 
-**=> Kết luận:** K-Means đã hoàn thành xuất sắc vai trò "người mở đường", tạo ra tri thức phân khúc (Segment Knowledge) mà không cần sự can thiệp của con người.
+**=> Kết luận:** K-Means đã hoàn thành xuất sắc vai trò "người mở đường", tạo ra tri thức phân khúc (Segment Knowledge) mà không cần sự can thiệp của con người, đồng thời phản ánh đúng xu hướng dịch chuyển của thị trường giai đoạn 2025-2026.
 
 ---
 
@@ -36,14 +36,14 @@ Việc tích hợp nhãn Cluster từ K-Means vào LightGBM đã mang lại sự
 
 | Chỉ số | Kết quả (+ K-Means) | Cải thiện so với Baseline |
 |---|---|---|
-| **R² Score** | **0.8487** | **+3.81%** (Giải thích được 85% biến động giá) |
-| **MAE (Sai số tuyệt đối)** | **860.6 triệu VND** | **Giảm 102.5 triệu VND** |
-| **MAPE (Phần trăm sai số)**| **13.84%** | **Giảm 2.13%** |
+| **R² Score** | **0.8525** | **+4.26%** (Giải thích được 85.25% biến động giá) |
+| **MAE (Sai số tuyệt đối)** | **903.7 triệu VND** | **Giảm 110.5 triệu VND** |
+| **MAPE (Phần trăm sai số)**| **13.19%** | **Giảm 2.64%** |
 
 ![Comparison Metrics](../step5_binh/plots_section_5/lightgbm_00_comparison_metrics.png)
 ![Predict Accuracy](../step5_binh/plots_section_5/lightgbm_02_predict_accuracy.png)
 
-**Nhận xét:** Với một thị trường biến động mạnh và nhiều yếu tố cảm tính như Bất động sản, mức sai số ~13% và R² đạt 0.85 là một kết quả cực kỳ ấn tượng, đủ độ tin cậy để ứng dụng thực tế.
+**Nhận xét:** Việc bổ sung dữ liệu 2026 đã đẩy độ chính xác của mô hình lên mức rất cao (R² ~ 0.85). Với một thị trường biến động mạnh, mức sai số ~13% là một kết quả xuất sắc, đặc biệt khi mô hình đã học được từ hơn 133,000 giao dịch.
 
 ### B. Đánh giá qua Feature Importance (Quyền lực của Biến)
 - **Biến Cluster đứng vị trí #1:** Đây là phát hiện quan trọng nhất. Nhãn phân khúc từ K-Means chứa đựng thông tin tổng hợp (tương tác giữa diện tích, vị trí, giá) mạnh hơn bất kỳ biến đơn lẻ nào.
@@ -63,22 +63,22 @@ Việc tích hợp nhãn Cluster từ K-Means vào LightGBM đã mang lại sự
 3.  **Tính giải thích cao (Explainability):** Thông qua Feature Importance và phân tích sai số theo cụm, mô hình không còn là "hộp đen" mà cung cấp các Insight kinh doanh rõ ràng.
 
 ### Hạn chế (Weaknesses)
-1.  **Độ nhiễu của phân khúc Premium:** Sai số ở Cụm 1 (Premium) cao nhất (MAE ~1.3 tỷ). Lý do: Giá nhà cao cấp phụ thuộc vào nhiều yếu tố "mềm" chưa thu thập được như: Thương hiệu chủ đầu tư, uy tín quản lý vận hành, hoặc nội thất cá nhân hóa đặc biệt.
+1.  **Độ nhiễu của phân khúc Cao cấp:** Sai số ở Cụm Cao Cấp (Cụm 0) cao nhất (MAE ~1.37 tỷ). Lý do: Giá nhà cao cấp phụ thuộc vào nhiều yếu tố "mềm" chưa thu thập được như: Thương hiệu chủ đầu tư, uy tín quản lý vận hành, hoặc nội thất cá nhân hóa đặc biệt.
 2.  **Sự phụ thuộc vào chất lượng tin đăng:** Mô hình dựa trên mô tả của môi giới. Nếu môi giới nhập liệu sai hoặc cố tình "thổi giá", mô hình sẽ bị ảnh hưởng (Garbage in - Garbage out).
-3.  **Điểm mù thời gian:** Mặc dù có biến `pub_month`, nhưng dữ liệu hiện tại chưa đủ dài để nắm bắt các chu kỳ kinh tế vĩ mô phức tạp hơn.
+3.  **Điểm mù chu kỳ kinh tế:** Dù đã có dữ liệu 2025-2026, thị trường BĐS vẫn có những pha "sốt đất" mang tính tâm lý bầy đàn mà mô hình hồi quy thuần túy khó lòng bắt nhịp kịp thời nếu không có dữ liệu vĩ mô (lãi suất, tín dụng).
 
 ---
 
 ## 6.4. So sánh Mô hình Toàn cục vs Mô hình Chuyên biệt (Mở rộng)
 
-Nhóm đã tiến hành phân tích sâu về sai số dự báo trên từng cụm K-Means:
-- **Cụm 2 (Phổ thông):** Dự báo chính xác nhất (MAE thấp nhất ~459 triệu). Thị trường này có tính đồng nhất cao, giá cả tuân theo quy luật diện tích/vị trí rất chặt chẽ.
-- **Cụm 1 (Premium):** Khó dự báo nhất.
+Nhóm đã tiến hành phân tích sâu về sai số dự báo trên từng cụm K-Means bằng cách tách riêng các mô hình (Specialized Models):
+- **Cụm 2 (Tầm Trung Lõi):** Dự báo chính xác nhất (MAE thấp nhất ~479 triệu). Thị trường này có tính đồng nhất cao, giá cả tuân theo quy luật diện tích/vị trí rất chặt chẽ.
+- **Cụm 0 (Cao Cấp):** Khó dự báo nhất, nhưng mô hình chuyên biệt đã giúp **cải thiện sai số (giảm MAE)** so với mô hình toàn cục.
 
 ![Error by Cluster](../step5_binh/plots_section_5/lightgbm_03_error_by_cluster.png)
 
-**Insight đề xuất:** Thay vì sử dụng một "Đại mô hình" cho toàn bộ 72.604 căn hộ, trong tương lai có thể xây dựng 3 mô hình chuyên biệt cho 3 cụm. Điều này đặc biệt cần thiết cho phân khúc Premium để bổ sung thêm các biến số đặc thù (như view hồ, tầng cao, tiêu chuẩn bàn giao) nhằm giảm sai số dự báo cho nhóm khách hàng khó tính này.
+**Insight đề xuất:** Với tập dữ liệu đủ lớn (133k+), chiến lược "chia để trị" (sử dụng các mô hình chuyên biệt cho từng phân khúc) bắt đầu phát huy hiệu quả, đặc biệt cho phân khúc Cao Cấp và Phổ Thông Ngoại Ô. Trong tương lai, việc tách riêng đường ống dự đoán cho phân khúc Premium sẽ là hướng đi bắt buộc để cải thiện độ chính xác cho nhóm khách hàng cao cấp.
 
 ---
 
-**Tổng kết:** Phần VI đã chứng minh được tính đúng đắn của toàn bộ quy trình Data Mining. Kết quả đạt được không chỉ mạnh về mặt kỹ thuật mà còn mang lại những giá trị hiểu biết sâu sắc về cấu trúc thị trường chung cư Hà Nội năm 2024.
+**Tổng kết:** Phần VI đã chứng minh được tính đúng đắn của toàn bộ quy trình Data Mining. Kết quả đạt được (R² = 0.8525) không chỉ mạnh về mặt kỹ thuật mà còn mang lại những giá trị hiểu biết sâu sắc về cấu trúc thị trường chung cư Hà Nội trong giai đoạn chuyển giao 2025-2026.

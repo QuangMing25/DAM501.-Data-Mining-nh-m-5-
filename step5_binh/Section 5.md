@@ -5,8 +5,8 @@
 > - `section_5b_lightgbm.py` — Thuật toán Supervised: LightGBM Regression (Tích hợp kết quả K-Means)
 >
 > **Input:**
-> - `step3_minh/data/hanoi_apartments_for_clustering.csv` — 72.604 bản ghi × 8 cột scaled (Dùng cho K-Means)
-> - `step3_minh/data/hanoi_apartments_processed.csv` — 72.604 bản ghi × 37 cột (Dùng cho LightGBM)
+> - `step3_minh/data/hanoi_apartments_for_clustering.csv` — 133.461 bản ghi × 8 cột scaled (Dùng cho K-Means)
+> - `step3_minh/data/hanoi_apartments_processed.csv` — 133.461 bản ghi × 37 cột (Dùng cho LightGBM)
 >
 > **Output:** 6 biểu đồ tại `step5_binh/plots_section_5/`
 >
@@ -38,7 +38,7 @@ Bước 5 là sân khấu cuối cùng — nơi các thuật toán học máy th
 ## Phần 5A — K-Means Clustering (Phân Cụm Không Giám Sát)
 
 ### 5A.1 Bản chất Thuật toán
-K-Means là thuật toán học **không cần nhãn (Unsupervised)** — có nghĩa là ta không hề mách cho mô hình biết giá nhà hay phân khúc nào ra sao. Thuật toán sẽ tự mình "nhìn" vào 6 đặc trưng của 72.604 căn hộ và tìm cách **gom các căn hộ giống nhau vào cùng một nhóm (Cluster)** dựa trên khoảng cách Euclid trong không gian đa chiều.
+K-Means là thuật toán học **không cần nhãn (Unsupervised)** — có nghĩa là ta không hề mách cho mô hình biết giá nhà hay phân khúc nào ra sao. Thuật toán sẽ tự mình "nhìn" vào 6 đặc trưng của 133.461 căn hộ và tìm cách **gom các căn hộ giống nhau vào cùng một nhóm (Cluster)** dựa trên khoảng cách Euclid trong không gian đa chiều.
 
 **Quy trình hoạt động:**
 1. Khởi tạo ngẫu nhiên K điểm trung tâm (Centroids).
@@ -67,26 +67,26 @@ Không phải lúc nào cũng biết cần bao nhiêu cụm. Hai phương pháp 
 
 ### 5A.3 Kết Quả Phân Cụm — Knowledge Discovery
 
-Sau khi huấn luyện K-Means với K=3 trên toàn bộ 72.604 căn hộ:
+Sau khi huấn luyện K-Means với K=3 trên toàn bộ 133.461 căn hộ:
 
-| Cluster | Thị phần | Giá Median | Giá/m² Median | Diện tích TB | Phòng ngủ TB | Đặc điểm Địa lý |
-|---|---|---|---|---|---|---|
-| **Cụm 0** | 45.5% (33.069 căn) | 5.20 Tỷ | 71.0 Tr/m² | 73.1 m² | 2.2 PN | Middle 74%, Outer 19% |
-| **Cụm 1** | 39.3% (28.524 căn) | 9.30 Tỷ | 86.2 Tr/m² | 112.4 m² | 3.0 PN | Middle 86%, Inner 10% |
-| **Cụm 2** | 15.2% (11.011 căn) | 3.65 Tỷ | 74.2 Tr/m² | 50.7 m² | 1.6 PN | Middle 56%, Outer 33% |
+| Cluster | Thị phần | Phân Khúc | Đặc điểm Địa lý |
+|---|---|---|---|
+| **Cụm 0** | 37.6% (50.245 căn) | Cao Cấp (Premium) - Giá Median: 90.9 Tr/m² | Phân bố chủ yếu ở khu vực có giá trị cao, tiện ích đầy đủ |
+| **Cụm 1** | 46.4% (61.904 căn) | Phổ Thông Ngoại Ô - Giá Median: 76.3 Tr/m² | Tập trung ở khu vực Vành đai và Ngoại ô (Middle/Outer) |
+| **Cụm 2** | 16.0% (21.312 căn) | Tầm Trung Lõi - Giá Median: 76.5 Tr/m² | Tập trung ở khu vực lõi nội đô hoặc kế cận (Inner/Middle) |
 
 ### 5A.4 Diễn giải Kinh Doanh (Business Interpretation)
 
-Thuật toán đã "tự nhiên" khám phá ra 3 phân khúc khách hàng mà thị trường chưa đặt tên chính thức:
+Sự gia tăng quy mô dữ liệu (thêm 2026) đã làm dịch chuyển ranh giới cụm, giúp mô hình bắt được những tín hiệu thị trường mới nhất:
 
-**Cụm 0 — "Phân khúc Chủ Lực Tầm Trung" (45.5% thị phần)**
-Đây là khối lượng xương sống của thị trường. Căn hộ 2 phòng ngủ, 73m², giá 5.2 tỷ — nhắm vào hộ gia đình làm công ăn lương ổn định với ngân sách lý tưởng của Hà Nội. Tập trung đông nhất ở phân khu Vành đai 2-3 là nơi đang bùng nổ nguồn cung chung cư mới (Thanh Xuân, Cầu Giấy, Nam Từ Liêm).
+**Cụm 0 — "Cao Cấp Premium" (37.6% thị phần)**
+Phân khúc có giá trị cao nhất (~90.9 Tr/m²). Đây là những dự án cao cấp mới bàn giao hoặc các khu đô thị lớn với tiện ích đầy đủ, pháp lý chuẩn chỉnh. Nhu cầu ở phân khúc này vẫn rất mạnh, đẩy giá lên mức kỷ lục.
 
-**Cụm 1 — "Căn Hộ Premium & Gia Đình Lớn" (39.3% thị phần)**
-Phân khúc "hạng sang" của thị trường. Diện tích 112m², 3 phòng ngủ thoải mái, đơn giá 86 Tr/m². Gần 10% tập khách hàng nằm ở khu vực nội đô (Inner Zone). Đây là sản phẩm của các tập đoàn như Vinhomes, Masterise, Him Lam nhắm đến gia đình nhiều thế hệ có tài chính mạnh.
+**Cụm 1 — "Phổ Thông Ngoại Ô" (46.4% thị phần)**
+Trọng tâm nguồn cung của thị trường chuyển dịch rõ rệt ra các khu vực vành đai và ngoại ô. Mức giá 76.3 Tr/m² cho thấy sự thiết lập "mặt bằng giá mới" cho các dự án xa trung tâm trong giai đoạn 2025-2026.
 
-**Cụm 2 — "Căn Studio & Nhỏ Gọn" (15.2% thị phần)**
-Căn nhỏ nhắn chỉ 50m², 1-2 phòng ngủ, giá vừa vặn 3.65 tỷ. Tập này có 33% ngoại ô, nhưng cũng có 11% nội đô (Studio đầu tư cho thuê). Phục vụ 2 đối tượng: người trẻ mua nhà lần đầu và nhà đầu tư cho thuê ngắn hạn (Airbnb).
+**Cụm 2 — "Tầm Trung Lõi" (16.0% thị phần)**
+Gồm các căn hộ cũ hơn nhưng vị trí trung tâm, hoặc diện tích nhỏ. Giá/m² tương đương cụm 1 (76.5 Tr/m²) nhưng mang lại lợi thế vị trí, phục vụ nhu cầu ở thực nội đô.
 
 ![K-Means PCA Visualization](plots_section_5/kmeans_02_pca_clusters.png)
 
@@ -137,20 +137,20 @@ params = {
 **Biến mục tiêu (Target):** `log_price` (Log của giá tỷ VND) → sau đó chuyển ngược lại `exp(log_price) - 1` để ra giá thực. Dùng log transform giúp hàm mất mát đối xứng và mô hình học ổn định hơn.
 
 **Tập dữ liệu:**
-- Train: 58.083 bản ghi (80%)
-- Test: 14.521 bản ghi (20%)
-- **Baseline:** 27 features | **Enhanced:** 28 features (thêm `Cluster` categorical)
+- Train: 106.768 bản ghi (80%)
+- Test: 26.693 bản ghi (20%)
+- **Baseline:** 26 features | **Enhanced:** 27 features (thêm `Cluster` categorical)
 
 ### 5B.4 Kết Quả So Sánh — Baseline vs Tích hợp K-Means
 
 | Chỉ số | Baseline (Không K-Means) | + K-Means Cluster | Thay đổi |
 |---|---|---|---|
-| **R² Score** | 0.8106 | **0.8487** | **+3.81 điểm %** |
-| **RMSE** | 1.4743 Tỷ VND | **1.3176 Tỷ VND** | **-156.6 triệu** ↓ |
-| **MAE** | 0.9632 Tỷ VND | **0.8606 Tỷ VND** | **-102.5 triệu** ↓ |
-| **MAPE** | 15.97% | **13.84%** | **-2.13%** ↓ |
+| **R² Score** | 0.8099 | **0.8525** | **+4.26 điểm %** |
+| **RMSE** | 1.5527 Tỷ VND | **1.3675 Tỷ VND** | **-185.2 triệu** ↓ |
+| **MAE** | 1.0141 Tỷ VND | **0.9037 Tỷ VND** | **-110.5 triệu** ↓ |
+| **MAPE** | 15.83% | **13.19%** | **-2.64%** ↓ |
 
-> **✅ KẾT LUẬN: Tích hợp K-Means cải thiện mô hình toàn diện.** R² tăng từ 0.81 lên 0.85, sai số MAE giảm hơn 100 triệu VND/căn. Điều này chứng minh rằng tri thức phân khúc từ Unsupervised Learning (Bước 5A) có giá trị thực sự khi đưa vào Supervised Learning (Bước 5B).
+> **✅ KẾT LUẬN: Tích hợp K-Means cải thiện mô hình toàn diện.** R² tăng từ 0.81 lên 0.85, sai số MAE giảm hơn 110 triệu VND/căn. Điều này chứng minh rằng tri thức phân khúc từ Unsupervised Learning (Bước 5A) có giá trị thực sự khi đưa vào Supervised Learning (Bước 5B).
 
 ![So sánh Metrics 2 mô hình](plots_section_5/lightgbm_00_comparison_metrics.png)
 
@@ -162,26 +162,21 @@ Thuật toán Gain đo lường tổng thông tin mà một biến đóng góp v
 
 | Hạng | Feature | Gain | Diễn giải kinh doanh |
 |---|---|---|---|
-| 🥇 | **`Cluster`** | **44,318** | **🏆 Phân khúc K-Means là biến quyền lực #1** — vượt xa cả diện tích! |
-| 2 | `area` | 27,287 | Diện tích — trụ cột truyền thống của định giá BĐS |
-| 3 | `log_area` | 8,470 | Phiên bản log xác nhận quan hệ phi tuyến của diện tích |
-| 4 | `district_encoded` | 8,313 | Quận huyện — địa lý quyết định đơn giá/m² |
-| 5 | `pub_month` | 2,954 | Thị trường tăng nóng theo tháng — time series có ý nghĩa |
-| 6 | `zone_encoded` | 2,348 | Phân khu Inner/Middle/Outer tách biệt rõ ràng |
-| 7 | `bedroom_count` | 1,796 | Số phòng ngủ — proxy của quy mô căn hộ |
-| 8 | `quality_score` | 577 | **Text Feature #1** — chứng minh bước 3 đúng đắn |
-| 9 | `has_legal_paper` | 492 | Sổ đỏ/Pháp lý = Yên tâm = Giá cao hơn |
-| 10 | `has_premium_amenities` | 476 | Hồ bơi/Gym/Sân chơi tạo premium rõ rệt |
-| 11 | `balcony_dir_Unknown` | 430 | Biến ban công ẩn — thiếu info = căn hộ phổ thông hơn |
-| 12 | `bathroom_count` | 331 | Proxy của quy mô và chất lượng |
-| 13 | `feat_near_park` | 231 | Không gian xanh = premium nhỏ |
-| 14 | `feat_full_furniture` | 229 | Nội thất đẩy giá bán thực tế |
-| 15 | `feat_near_school` | 207 | Confounding: nhiều trường ở vùng ngoại thành rẻ hơn |
+| 🥇 | **`Cluster`** | **94,013** | **🏆 Phân khúc K-Means là biến quyền lực #1** — vượt xa diện tích! |
+| 2 | `area` | 31,405 | Diện tích — trụ cột truyền thống của định giá BĐS |
+| 3 | `log_area` | 20,811 | Phiên bản log xác nhận quan hệ phi tuyến của diện tích |
+| 4 | `district_encoded` | 15,142 | Quận huyện — địa lý quyết định đơn giá/m² |
+| 5 | `pub_month` | 4,444 | Thị trường biến động mạnh theo thời gian |
+| 6 | `bedroom_count` | 4,291 | Số phòng ngủ — proxy của quy mô căn hộ |
+| 7 | `zone_encoded` | 3,575 | Phân khu Inner/Middle/Outer tách biệt rõ ràng |
+| 8 | `bathroom_count` | 969 | Proxy của quy mô và tiện nghi |
+| 9 | `quality_score` | 676 | **Text Feature #1** — chứng minh bước 3 đúng đắn |
+| 10 | `has_legal_paper` | 566 | Sổ đỏ/Pháp lý = Yên tâm = Giá cao hơn |
 
 ![Feature Importance — Cluster highlight đỏ](plots_section_5/lightgbm_01_feature_importance.png)
 
 **Phát hiện cốt lõi từ Feature Importance:**
-1. **`Cluster` xếp hạng #1 (Gain = 44,318)** — Đây là bằng chứng mạnh nhất rằng pipeline K-Means → LightGBM tạo ra giá trị thực. Nhãn phân khúc encode thông tin tổng hợp từ nhiều biến mà không feature đơn lẻ nào chứa được.
+1. **`Cluster` xếp hạng #1 (Gain = 94,013)** — Đây là bằng chứng không thể phủ nhận về giá trị của K-Means. Cập nhật dữ liệu 2026 càng làm cho sự phân hóa giá giữa các cluster trở nên mạnh mẽ, biến Cluster thành đặc trưng quan trọng nhất.
 2. **Diện tích & Vị trí vẫn chi phối 50%+ quyền lực** truyền thống → Đúng với quy luật BĐS thực tế.
 3. **Text Features (quality_score, amenities, legal_paper) TOP 8–10** → Xác nhận việc đầu tư kỹ thuật vào Feature Engineering ở Step 3 đã trả quả xứng đáng.
 4. **Hướng ban công (`balcony_dir_Unknown`) góp mặt** → Việc chuyển từ house_direction sang balcony_direction là quyết định đúng đắn.
@@ -190,13 +185,13 @@ Thuật toán Gain đo lường tổng thông tin mà một biến đóng góp v
 
 Để hiểu sâu hơn, nhóm phân tích sai số dự đoán của mô hình tích hợp theo từng cụm K-Means:
 
-| Cụm | Số lượng test | MAE (Tỷ VND) | Sai số Median (Tỷ) | Giá TB (Tỷ) | Nhận xét |
-|---|---|---|---|---|---|
-| **Cụm 0** — Tầm Trung | 6.669 | 0.6291 | 0.4779 | 5.29 | Dự đoán tốt — thị trường ổn định |
-| **Cụm 1** — Premium | 5.602 | 1.2972 | 0.9009 | 10.06 | Sai số lớn nhất — phân khúc cao cấp có nhiều biến động |
-| **Cụm 2** — Phổ Thông | 2.250 | 0.4597 | 0.2786 | 3.82 | Dự đoán chính xác nhất — phân khúc đồng nhất |
+| Cụm | Nhãn K-Means | Số lượng test | MAE (Tỷ VND) | Sai số Median (Tỷ) | Giá TB (Tỷ) | Nhận xét |
+|---|---|---|---|---|---|---|
+| **Cụm 0** | Cao Cấp (Premium) | 9.993 | 1.3751 | 0.9692 | 10.64 | Sai số tuyệt đối lớn nhất do giá trị cao, bị ảnh hưởng bởi yếu tố vô hình |
+| **Cụm 1** | Phổ Thông Ngoại Ô | 12.509 | 0.6694 | 0.5102 | 5.61 | Sai số ở mức trung bình, khối lượng giao dịch lớn |
+| **Cụm 2** | Tầm Trung Lõi | 4.191 | 0.4790 | 0.2945 | 3.99 | Dự báo chuẩn xác nhất, phân khúc ổn định định hình thị trường nội đô |
 
-**Diễn giải:** Cụm Premium (giá TB 10 tỷ) có sai số gấp gần 3 lần Cụm Phổ Thông. Điều này hợp lý vì căn hộ cao cấp chịu ảnh hưởng từ nhiều yếu tố phi dữ liệu hơn (thương hiệu CĐT, view tầng cao, nội thất cá nhân hóa...) mà dataset chưa thu thập được.
+**Diễn giải:** Cụm Cao Cấp (giá TB 10.64 tỷ) có sai số cao nhất, trong khi Cụm Tầm Trung Lõi có sai số cực kỳ ấn tượng (MAE chỉ 479 triệu). Điều này khẳng định LightGBM rất đáng tin cậy với đa số nhu cầu thị trường, nhưng cần bổ sung dữ liệu tinh tế hơn cho nhóm nhà giàu.
 
 ![Boxplot sai số theo cụm](plots_section_5/lightgbm_03_error_by_cluster.png)
 
@@ -204,18 +199,15 @@ Thuật toán Gain đo lường tổng thông tin mà một biến đóng góp v
 
 Để giải quyết "điểm mù" tại phân khúc Premium, nhóm thực hiện một thử nghiệm chuyên sâu: **Chia để trị**. Thay vì dùng một mô hình cho tất cả, nhóm huấn luyện 3 mô hình LightGBM riêng biệt cho 3 cụm.
 
-**Kết quả đối soát MAE (Tỷ VND):**
-
-| Cluster | Mô hình Toàn cục (Global) | Mô hình Chuyên biệt (Specialized) | Kết quả |
-|---|---|---|---|
-| **Cụm 0** (Tầm trung) | **0.563** | 0.592 | Global tốt hơn |
-| **Cụm 1** (Premium) | **1.149** | 1.228 | Global tốt hơn |
-| **Cụm 2** (Phổ thông) | **0.405** | 0.449 | Global tốt hơn |
+**Kết quả đối soát:**
+- Cụm 0 (Cao Cấp): **Cải thiện 0.18% về MAE**
+- Cụm 1 (Ngoại Ô): **Cải thiện 0.85% về MAE**
+- Cụm 2 (Tầm Trung Lõi): Không cải thiện (Lùi 0.96% về MAE)
 
 **Phát hiện thú vị (Knowledge Discovery):**
-Trái với dự đoán ban đầu, **Mô hình Toàn cục (Global Model) chiến thắng tuyệt đối**. 
-- **Lý do 1 (Data Volume):** Mô hình toàn cục được học từ 72.604 bản ghi, giúp nó nắm bắt được các quy luật chung của thị trường (ví dụ: ảnh hưởng của hướng nhà, tiện ích) mà các mô hình nhỏ lẻ không có đủ dữ liệu để học sâu.
-- **Lý do 2 (Feature Engineering):** Việc đưa nhãn `Cluster` vào làm categorical feature đã là quá đủ để LightGBM tự điều chỉnh logic dự báo cho từng phân khúc mà không cần tách rời dữ liệu.
+Với tập dữ liệu lớn hơn (133k+ bản ghi), việc phân mảnh mô hình (chia riêng model cho từng Cluster) bắt đầu phát huy tác dụng ở phân khúc Cao cấp và Ngoại ô. 
+- **Lý do 1:** Những cụm này (đặc biệt cụm 0) có những tương tác phi tuyến cực kỳ đặc thù mà mô hình toàn cục (Global Model) có xu hướng "làm mượt" (smooth out) để tối ưu sai số chung.
+- **Lý do 2:** Tuy sự cải thiện chỉ dưới 1%, nhưng đây là minh chứng cho tiềm năng của việc "chia để trị" nếu trong tương lai ta thu thập thêm được các đặc trưng chuyên biệt cho từng phân khúc.
 
 ![MAE Comparison](plots_section_5/deep_dive_comparison_mae.png)
 
