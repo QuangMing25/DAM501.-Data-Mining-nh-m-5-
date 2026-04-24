@@ -318,52 +318,53 @@ print(f"\n{SEP}")
 print("PART 3 — BEHAVIORAL / USAGE PATTERN EXPLORATION")
 print(SEP)
 
-# --- 3.1 Xu hướng đăng tin theo tháng ---
-print("\n--- 3.1 Xu hướng đăng tin theo tháng ---")
-month_stats = df.groupby('pub_month').agg(
+# --- 3.1 Xu hướng đăng tin theo thời gian ---
+print("\n--- 3.1 Xu hướng đăng tin theo thời gian (Year-Month) ---")
+month_stats = df.groupby(['pub_year', 'pub_month']).agg(
     count=('price', 'count'),
     mean_price=('price_ty', 'mean'),
     median_price=('price_ty', 'median'),
     mean_ppm2=('price_per_m2_tr', 'mean')
-)
+).reset_index().sort_values(['pub_year', 'pub_month'])
 print(month_stats.to_string())
 
 # ─────────────────────────────────────────────────────────────────
 # PLOT 5: Xu hướng theo tháng
 # ─────────────────────────────────────────────────────────────────
 fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-fig.suptitle("Xu hướng Thị Trường Căn Hộ Hà Nội theo Tháng (06–12/2025)", fontsize=14, fontweight='bold', y=1.02)
+fig.suptitle("Xu hướng Thị Trường Căn Hộ Hà Nội (2025–2026)", fontsize=14, fontweight='bold', y=1.02)
 
-months = month_stats.index.astype(int)
-month_labels = [f'T{m}' for m in months]
+# Tạo nhãn "Y-M" cho trục hoành
+month_labels = [f"{int(y)}-{int(m):02d}" for y, m in zip(month_stats['pub_year'], month_stats['pub_month'])]
+x_range = range(len(month_stats))
 
 # 5a: Số lượng tin đăng
-axes[0].bar(months, month_stats['count'], color='#3498db', edgecolor='white', lw=0.5)
-axes[0].set_xlabel('Tháng')
+axes[0].bar(x_range, month_stats['count'], color='#3498db', edgecolor='white', lw=0.5)
+axes[0].set_xlabel('Thời gian (Năm-Tháng)')
 axes[0].set_ylabel('Số lượng tin đăng')
 axes[0].set_title('Số Lượng Tin Đăng Mới')
-axes[0].set_xticks(months)
-axes[0].set_xticklabels(month_labels)
-for m, c in zip(months, month_stats['count']):
-    axes[0].text(m, c + 100, f'{c:,}', ha='center', fontsize=8)
+axes[0].set_xticks(x_range)
+axes[0].set_xticklabels(month_labels, rotation=45)
+for i, c in enumerate(month_stats['count']):
+    axes[0].text(i, c + 100, f'{c:,}', ha='center', fontsize=8)
 
 # 5b: Giá trung bình
-axes[1].plot(months, month_stats['mean_price'], 'o-', color='#e74c3c', lw=2, markersize=6)
-axes[1].fill_between(months, month_stats['mean_price'], alpha=0.1, color='#e74c3c')
-axes[1].set_xlabel('Tháng')
+axes[1].plot(x_range, month_stats['mean_price'], 'o-', color='#e74c3c', lw=2, markersize=6)
+axes[1].fill_between(x_range, month_stats['mean_price'], alpha=0.1, color='#e74c3c')
+axes[1].set_xlabel('Thời gian')
 axes[1].set_ylabel('Giá trung bình (tỷ VND)')
 axes[1].set_title('Giá Trung Bình theo Tháng')
-axes[1].set_xticks(months)
-axes[1].set_xticklabels(month_labels)
+axes[1].set_xticks(x_range)
+axes[1].set_xticklabels(month_labels, rotation=45)
 
 # 5c: Giá/m² trung bình
-axes[2].plot(months, month_stats['mean_ppm2'], 's-', color='#27ae60', lw=2, markersize=6)
-axes[2].fill_between(months, month_stats['mean_ppm2'], alpha=0.1, color='#27ae60')
-axes[2].set_xlabel('Tháng')
+axes[2].plot(x_range, month_stats['mean_ppm2'], 's-', color='#27ae60', lw=2, markersize=6)
+axes[2].fill_between(x_range, month_stats['mean_ppm2'], alpha=0.1, color='#27ae60')
+axes[2].set_xlabel('Thời gian')
 axes[2].set_ylabel('Giá/m² trung bình (triệu VND)')
 axes[2].set_title('Giá/m² Trung Bình theo Tháng')
-axes[2].set_xticks(months)
-axes[2].set_xticklabels(month_labels)
+axes[2].set_xticks(x_range)
+axes[2].set_xticklabels(month_labels, rotation=45)
 
 plt.tight_layout()
 plt.savefig(f"{PLOT_DIR}/eda_05_monthly_trends.png")
